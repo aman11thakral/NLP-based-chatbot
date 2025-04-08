@@ -100,7 +100,7 @@ def ask():
             })
         else:
             return jsonify({
-                'answer': "I'm sorry, I don't have enough information to answer that question. Please contact our Tesa expert team at support@tesa.com or call us at +91-1234567890, Monday to Saturday, 9 AM to 6 PM.",
+                'answer': "I'm sorry, I don't have enough information to answer that question.\n\n**Please contact our Tesa expert team:**\n\nEmail: support@tesa.com\nPhone: +91-1234567890\nHours: Monday to Saturday, 9 AM to 6 PM",
                 'confidence': confidence
             })
             

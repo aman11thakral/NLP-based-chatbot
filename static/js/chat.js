@@ -60,17 +60,25 @@ document.addEventListener('DOMContentLoaded', function() {
         chatMessages.scrollTop = chatMessages.scrollHeight;
     }
     
-    // Add a bot message to the chat
+    // Add a bot message to the chat with markdown support
     function addBotMessage(message) {
         const messageDiv = document.createElement('div');
         messageDiv.className = 'message bot-message';
-        messageDiv.textContent = message;
+        
+        // Process markdown-like formatting (bold text and line breaks)
+        let formattedMessage = message
+            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') // Bold text
+            .replace(/\n/g, '<br>'); // Line breaks
+            
+        messageDiv.innerHTML = formattedMessage;
         chatMessages.appendChild(messageDiv);
         chatMessages.scrollTop = chatMessages.scrollHeight;
         
         // Speak the message if speech synthesis is supported
         if ('speechSynthesis' in window) {
-            speakMessage(message);
+            // Remove HTML tags for speech
+            const cleanText = message.replace(/\*\*/g, '');
+            speakMessage(cleanText);
         }
     }
     
