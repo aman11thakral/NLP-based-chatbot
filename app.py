@@ -93,14 +93,14 @@ def ask():
             logger.error(f"Error logging chat: {e}")
         
         # Return answer based on confidence
-        if answer and confidence > 0.4:  # Lowered threshold for better matching
+        if answer and confidence > 0.3:  # Lowered threshold as requested
             return jsonify({
                 'answer': answer,
                 'confidence': confidence
             })
         else:
             return jsonify({
-                'answer': "I'm sorry, I don't have enough information to answer that question accurately. Could you please rephrase or ask something else?",
+                'answer': "I'm sorry, I don't have enough information to answer that question. Please contact our Tesa expert team at support@tesa.com or call us at +91-1234567890, Monday to Saturday, 9 AM to 6 PM.",
                 'confidence': confidence
             })
             

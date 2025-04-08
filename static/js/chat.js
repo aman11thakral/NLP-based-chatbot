@@ -13,7 +13,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Toggle chat visibility
     chatToggle.addEventListener('click', function() {
         chatContainer.style.display = 'flex';
-        chatToggle.style.display = 'none';
+        // Keep the toggle button visible (removed the line that hides it)
         
         // Show greeting message if it's the first time opening
         if (!greetingShown) {
@@ -45,10 +45,10 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Show greeting message
     function showGreeting() {
-        addBotMessage("👋 Hi there! I'm your Material Expert AI assistant.");
+        addBotMessage("👋 Hi there! I'm your Tesa Assistant.");
         setTimeout(() => {
             addBotMessage("I can answer questions about wood, MDF, particle board, HDHMR, BOILO, and more. How can I help you today?");
-        }, 500);
+        }, 300); // Made the delay shorter for faster transitions
     }
     
     // Add a user message to the chat
