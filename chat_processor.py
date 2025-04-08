@@ -144,19 +144,29 @@ def get_material_definitions():
         str: Formatted definitions of all materials
     """
     definitions = {
-        "MDF": "Medium Density Fiberboard (MDF) is an engineered wood product made by breaking down hardwood or softwood residuals into wood fibers, combining it with wax and a resin binder, and forming it into panels by applying high temperature and pressure. It's known for its uniform density, smooth surface, and consistent properties throughout the panel.",
+        "MDF": "Medium Density Fiberboard (MDF) is an engineered wood product. It is made by breaking down hardwood or softwood residuals into wood fibers. These fibers are combined with wax and a resin binder, then formed into panels by applying high temperature and pressure. MDF is known for its uniform density, smooth surface, and consistent properties throughout the panel.",
         
-        "HDHMR": "Action TESA HDHMR is a registered trademark of Balaji Action Buildwell Pvt. Ltd. It has many characteristics which make it the first choice of consumers and influencers. HDHMR characteristics include High Density, High Moisture Resistance, Borer Resistance, Termite Resistance, and a ready-to-use smooth surface.",
+        "HDHMR": "Action TESA HDHMR is a registered trademark of Balaji Action Buildwell Pvt. Ltd. It has many characteristics which make it the first choice of consumers and influencers. HDHMR characteristics include:\n• High Density\n• High Moisture Resistance\n• Borer Resistance\n• Termite Resistance\n• Ready-to-use smooth surface",
         
-        "BOILO": "Boiling Water Resistant (BOILO) panels are high-quality engineered wood products that offer exceptional resistance to moisture, even when exposed to boiling water. They're specially treated to withstand humid conditions, making them suitable for kitchens, bathrooms, and other areas with high moisture exposure.",
+        "BOILO": "Boiling Water Resistant (BOILO) panels are high-quality engineered wood products. They offer exceptional resistance to moisture, even when exposed to boiling water. BOILO panels are specially treated to withstand humid conditions. This makes them suitable for kitchens, bathrooms, and other areas with high moisture exposure.",
         
-        "Particle Board": "Particle board is an engineered wood product manufactured from wood chips, sawmill shavings, or sawdust, and a synthetic resin or other suitable binder, which is pressed and extruded. It's cost-effective, has uniform density throughout, and is environmentally friendly as it uses recycled wood materials."
+        "Particle Board": "Particle board is an engineered wood product manufactured from wood chips, sawmill shavings, or sawdust. It uses a synthetic resin or other suitable binder, which is pressed and extruded. Particle board offers several benefits:\n• Cost-effective solution\n• Uniform density throughout\n• Environmentally friendly (uses recycled wood materials)\n• Good screw-holding ability"
     }
     
-    # Format the definitions in a readable way
-    formatted_response = "Here's information about these different wood materials:\n\n"
+    # Format the definitions in a readable way with clear separation
+    formatted_response = "**Comparison of Wood Materials**\n\n"
+    
     for material, definition in definitions.items():
-        formatted_response += f"**{material}**:\n{definition}\n\n"
+        formatted_response += f"**{material}**\n"
+        # Handle the definition text with proper formatting
+        if "\n•" in definition:
+            # For bullet points, preserve them
+            formatted_response += definition.replace("\n•", "\n  •")
+        else:
+            # For regular text paragraphs
+            sentences = [s.strip() for s in definition.split(". ") if s.strip()]
+            formatted_response += "\n  ".join(sentences)
+        formatted_response += "\n\n--------------------\n\n"  # Horizontal divider between materials
     
     return formatted_response
 
