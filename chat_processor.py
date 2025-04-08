@@ -106,6 +106,61 @@ def calculate_similarity(text1, text2):
     
     return weighted_score
 
+def is_comparison_question(question):
+    """
+    Determine if a question is asking for a comparison between different wood materials.
+    
+    Args:
+        question (str): The user's question
+        
+    Returns:
+        bool: True if it's a comparison question, False otherwise
+    """
+    # Convert to lowercase for easier matching
+    q = question.lower()
+    
+    # List of materials to check for
+    materials = ["mdf", "hdhmr", "boilo", "particle board", "particleboard", "wood"]
+    
+    # Check if multiple materials are mentioned
+    mentioned_materials = [m for m in materials if m in q]
+    
+    # Comparison keywords
+    comparison_words = ["vs", "versus", "compare", "difference", "between", "better", "stronger", 
+                         "comparison", "differ", "or", ",", "and"]
+    
+    # Check if any comparison words are present
+    has_comparison_word = any(word in q for word in comparison_words)
+    
+    # Return True if at least 2 materials are mentioned and there's a comparison word
+    return len(mentioned_materials) >= 2 and has_comparison_word
+
+
+def get_material_definitions():
+    """
+    Return definitions for all materials for comparison questions.
+    
+    Returns:
+        str: Formatted definitions of all materials
+    """
+    definitions = {
+        "MDF": "Medium Density Fiberboard (MDF) is an engineered wood product made by breaking down hardwood or softwood residuals into wood fibers, combining it with wax and a resin binder, and forming it into panels by applying high temperature and pressure. It's known for its uniform density, smooth surface, and consistent properties throughout the panel.",
+        
+        "HDHMR": "Action TESA HDHMR is a registered trademark of Balaji Action Buildwell Pvt. Ltd. It has many characteristics which make it the first choice of consumers and influencers. HDHMR characteristics include High Density, High Moisture Resistance, Borer Resistance, Termite Resistance, and a ready-to-use smooth surface.",
+        
+        "BOILO": "Boiling Water Resistant (BOILO) panels are high-quality engineered wood products that offer exceptional resistance to moisture, even when exposed to boiling water. They're specially treated to withstand humid conditions, making them suitable for kitchens, bathrooms, and other areas with high moisture exposure.",
+        
+        "Particle Board": "Particle board is an engineered wood product manufactured from wood chips, sawmill shavings, or sawdust, and a synthetic resin or other suitable binder, which is pressed and extruded. It's cost-effective, has uniform density throughout, and is environmentally friendly as it uses recycled wood materials."
+    }
+    
+    # Format the definitions in a readable way
+    formatted_response = "Here's information about these different wood materials:\n\n"
+    for material, definition in definitions.items():
+        formatted_response += f"**{material}**:\n{definition}\n\n"
+    
+    return formatted_response
+
+
 def get_best_answer(question, faq_data):
     """
     Find the best matching answer for a user question from the FAQ data.
@@ -125,6 +180,11 @@ def get_best_answer(question, faq_data):
         return "Please ask a question.", 0.0
     
     try:
+        # Check if this is a comparison question between different materials
+        if is_comparison_question(question):
+            logger.debug("Detected a comparison question, providing definitions for all materials")
+            return get_material_definitions(), 0.95  # High confidence for these specific responses
+        
         # Preprocess user question
         preprocessed_question = preprocess_text(question)
         
