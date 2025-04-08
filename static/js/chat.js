@@ -76,7 +76,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Type the message character by character
         let i = 0;
-        const typingSpeed = 10; // Lower is faster (milliseconds per character)
+        const typingSpeed = 5; // Doubled the speed (lower is faster, milliseconds per character)
         const htmlTagRegex = /<[^>]*>/g;
         
         // Extract all HTML tags and their positions to preserve them during typing
@@ -116,8 +116,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Scroll to the latest message
                 chatMessages.scrollTop = chatMessages.scrollHeight;
                 
-                // Random typing speed variation for realism
-                const randomDelay = Math.floor(Math.random() * 10) + typingSpeed;
+                // Random typing speed variation for realism (reduced for faster speed)
+                const randomDelay = Math.floor(Math.random() * 5) + typingSpeed;
                 setTimeout(typeNextChar, randomDelay);
             } else {
                 // Add any remaining tags at the end
@@ -135,8 +135,8 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
         
-        // Start typing
-        setTimeout(typeNextChar, 300);
+        // Start typing with minimal delay
+        setTimeout(typeNextChar, 100);
     }
     
     // Show typing indicator
