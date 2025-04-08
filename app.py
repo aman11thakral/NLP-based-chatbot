@@ -93,7 +93,7 @@ def ask():
             logger.error(f"Error logging chat: {e}")
         
         # Return answer based on confidence
-        if answer and confidence > 0.45:  # Increased threshold for stricter matching
+        if answer and confidence > 0.55:  # Further increased threshold for much stricter matching
             return jsonify({
                 'answer': answer,
                 'confidence': confidence

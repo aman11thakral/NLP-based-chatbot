@@ -81,7 +81,28 @@ def calculate_similarity(text1, text2):
     
     # Weigh the different similarity metrics
     # Sequence matcher is good for detecting similar phrases, while Jaccard and word match are better for semantic similarity
-    weighted_score = (sequence_score * 0.5) + (jaccard_score * 0.3) + (match_percentage * 0.2)
+    weighted_score = (sequence_score * 0.3) + (jaccard_score * 0.5) + (match_percentage * 0.2)
+    
+    # Add a penalty for short questions or very different word counts (often indicates unrelated questions)
+    word_count_similarity = min(len(words1), len(words2)) / max(len(words1), len(words2)) if max(len(words1), len(words2)) > 0 else 0
+    
+    # If the lengths are very different, reduce the score
+    if word_count_similarity < 0.5:
+        weighted_score *= 0.8  # Penalty for very different lengths
+        
+    # Add context-specific keywords boost for material-related terms
+    material_keywords = {"mdf", "hdhmr", "wood", "particle", "board", "boilo", "plywood", "timber", 
+                        "material", "furniture", "cabinet", "door", "panel", "wardrobe", "kitchen",
+                        "moisture", "resistance", "density", "termite", "borer", "action", "tesa"}
+    
+    user_words = set(text1.split())
+    faq_words = set(text2.split())
+    
+    # If the user question contains material-related keywords that also appear in the FAQ question, boost the score
+    material_overlap = len(user_words.intersection(material_keywords).intersection(faq_words))
+    if material_overlap > 0:
+        keyword_boost = min(0.15, 0.05 * material_overlap)  # Up to 15% boost based on keyword matches
+        weighted_score = min(1.0, weighted_score + keyword_boost)  # Cap at 1.0
     
     return weighted_score
 

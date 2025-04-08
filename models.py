@@ -27,8 +27,8 @@ class FAQ(db.Model):
                 "material": "Particle Board"
             },
             {
-                "question": "What is HDHMR?",
-                "answer": "High Density High Moisture Resistant (HDHMR) boards are engineered wood products with higher density and better moisture resistance than standard MDF. They are made from refined wood fibers and advanced resins to withstand humidity and moisture.",
+                "question": "What is Action TESA HDHMR?",
+                "answer": "Action TESA HDHMR is a registered trademark of Balaji Action Buildwell Pvt. Ltd. It has many characteristics which make it apparently the first choice of consumers and influencers. HDHMR characteristics include High Density, High Moisture Resistance, Borer Resistance, Termite Resistance, and a ready-to-use smooth surface.",
                 "material": "HDHMR"
             }
         ]
