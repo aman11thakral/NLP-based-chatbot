@@ -23,11 +23,27 @@ def preprocess_text(text):
     # Remove special characters and extra spaces
     text = re.sub(r'[^\w\s]', ' ', text)
     text = re.sub(r'\s+', ' ', text).strip()
-    return text
+    
+    # Remove common stop words that don't add much meaning
+    stop_words = {'a', 'an', 'the', 'and', 'or', 'but', 'is', 'are', 'was', 'were', 
+                 'be', 'been', 'being', 'in', 'on', 'at', 'to', 'for', 'with',
+                 'about', 'against', 'between', 'into', 'through', 'during', 
+                 'before', 'after', 'above', 'below', 'from', 'up', 'down', 'of', 
+                 'off', 'over', 'under', 'again', 'further', 'then', 'once', 'here',
+                 'there', 'when', 'where', 'why', 'how', 'all', 'any', 'both', 'each'}
+    
+    words = text.split()
+    filtered_words = [word for word in words if word not in stop_words]
+    
+    # If all words were stop words, return the original processed text to avoid empty strings
+    if not filtered_words and words:
+        return text
+        
+    return ' '.join(filtered_words)
 
 def calculate_similarity(text1, text2):
     """
-    Calculate similarity between two texts using SequenceMatcher.
+    Calculate similarity between two texts using a combination of techniques.
     
     Args:
         text1 (str): First text
@@ -40,9 +56,34 @@ def calculate_similarity(text1, text2):
     text1 = preprocess_text(text1)
     text2 = preprocess_text(text2)
     
+    # If either string is empty after preprocessing, return 0
+    if not text1 or not text2:
+        return 0.0
+    
     # Calculate similarity using SequenceMatcher
-    matcher = SequenceMatcher(None, text1, text2)
-    return matcher.ratio()
+    sequence_score = SequenceMatcher(None, text1, text2).ratio()
+    
+    # Calculate word overlap similarity
+    words1 = set(text1.split())
+    words2 = set(text2.split())
+    
+    # If either set is empty, return the sequence score to avoid division by zero
+    if not words1 or not words2:
+        return sequence_score
+    
+    # Calculate Jaccard similarity (intersection over union)
+    intersection = len(words1.intersection(words2))
+    union = len(words1.union(words2))
+    jaccard_score = intersection / union if union > 0 else 0
+    
+    # Calculate word match percentage
+    match_percentage = intersection / min(len(words1), len(words2)) if min(len(words1), len(words2)) > 0 else 0
+    
+    # Weigh the different similarity metrics
+    # Sequence matcher is good for detecting similar phrases, while Jaccard and word match are better for semantic similarity
+    weighted_score = (sequence_score * 0.5) + (jaccard_score * 0.3) + (match_percentage * 0.2)
+    
+    return weighted_score
 
 def get_best_answer(question, faq_data):
     """
