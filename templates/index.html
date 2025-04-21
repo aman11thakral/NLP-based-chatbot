@@ -13,7 +13,12 @@
     <div id="chat-container" class="chat-container">
         <div class="chat-header">
             <h4>Tesa Assistant</h4>
-            <button id="close-chat" class="btn-close btn-close-white" aria-label="Close"></button>
+            <div class="chat-controls">
+                <button id="refresh-chat" class="btn-refresh" aria-label="Refresh Chat">
+                    <i class="fas fa-sync-alt"></i>
+                </button>
+                <button id="close-chat" class="btn-close btn-close-white" aria-label="Close"></button>
+            </div>
         </div>
         
         <div id="chat-messages" class="chat-messages">
@@ -42,6 +47,7 @@
 {% endblock %}
 
 {% block scripts %}
+<script src="{{ url_for('static', filename='js/wood-definitions.js') }}"></script>
 <script src="{{ url_for('static', filename='js/chat.js') }}"></script>
 <script src="{{ url_for('static', filename='js/voice.js') }}"></script>
 {% endblock %}

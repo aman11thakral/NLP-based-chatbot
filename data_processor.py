@@ -33,8 +33,8 @@ def load_all_faqs():
             from models import FAQ
             return FAQ.get_default_data()
         
-        # Get all Excel files in the attached_assets directory
-        excel_files = glob.glob("attached_assets/*.xlsx")
+        # Get all Excel files in the attached_assets directory, excluding temporary files
+        excel_files = [f for f in glob.glob("attached_assets/*.xlsx") if not os.path.basename(f).startswith('~$')]
         logger.info(f"Found {len(excel_files)} Excel files: {excel_files}")
         
         if not excel_files:

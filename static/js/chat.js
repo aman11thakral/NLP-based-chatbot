@@ -1,8 +1,10 @@
+// Import wood definitions
 document.addEventListener('DOMContentLoaded', function() {
     // DOM elements
     const chatToggle = document.getElementById('chat-toggle');
     const chatContainer = document.getElementById('chat-container');
     const closeChat = document.getElementById('close-chat');
+    const refreshChat = document.getElementById('refresh-chat');
     const chatMessages = document.getElementById('chat-messages');
     const userInput = document.getElementById('user-input');
     const sendBtn = document.getElementById('send-btn');
@@ -10,25 +12,43 @@ document.addEventListener('DOMContentLoaded', function() {
     // Track if we've shown the greeting
     let greetingShown = false;
     
-    // Toggle chat visibility
+    // Toggle chat visibility (open/close)
     chatToggle.addEventListener('click', function() {
-        chatContainer.style.display = 'flex';
-        // Keep the toggle button visible (removed the line that hides it)
-        
-        // Show greeting message if it's the first time opening
-        if (!greetingShown) {
-            showGreeting();
-            greetingShown = true;
+        // If chat is visible, hide it; otherwise, show it
+        if (chatContainer.style.display === 'flex') {
+            chatContainer.style.display = 'none';
+        } else {
+            chatContainer.style.display = 'flex';
+            
+            // Show greeting message if it's the first time opening
+            if (!greetingShown) {
+                showGreeting();
+                greetingShown = true;
+            }
+            
+            // Focus the input field
+            userInput.focus();
         }
-        
-        // Focus the input field
-        userInput.focus();
     });
     
-    // Close chat
+    // Close chat when X button is clicked
     closeChat.addEventListener('click', function() {
         chatContainer.style.display = 'none';
-        chatToggle.style.display = 'flex';
+    });
+    
+    // Refresh chat (clear all messages) when refresh button is clicked
+    refreshChat.addEventListener('click', function() {
+        // Clear all messages
+        chatMessages.innerHTML = '';
+        
+        // Add a small animation to the refresh button
+        refreshChat.classList.add('refreshing');
+        setTimeout(() => {
+            refreshChat.classList.remove('refreshing');
+        }, 500);
+        
+        // Show greeting again
+        showGreeting();
     });
     
     // Send message on button click
@@ -65,80 +85,46 @@ document.addEventListener('DOMContentLoaded', function() {
         const messageDiv = document.createElement('div');
         messageDiv.className = 'message bot-message';
         
-        // Process markdown-like formatting (bold text and line breaks)
+        // Check if message contains wood material HTML
+        if (message.includes('wood-comparison')) {
+            messageDiv.innerHTML = message;
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            return;
+        }
+        
+        // Process markdown-like formatting for regular messages
         let formattedMessage = message
             .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') // Bold text
             .replace(/\n/g, '<br>'); // Line breaks
         
-        // For the typing animation effect
         messageDiv.innerHTML = '';
         chatMessages.appendChild(messageDiv);
         
-        // Type the message character by character
+        // Type the message character by character for non-HTML content
         let i = 0;
-        const typingSpeed = 5; // Doubled the speed (lower is faster, milliseconds per character)
-        const htmlTagRegex = /<[^>]*>/g;
+        const typingSpeed = 5;
+        const plainText = formattedMessage.replace(/<[^>]*>/g, '');
         
-        // Extract all HTML tags and their positions to preserve them during typing
-        const htmlTags = [];
-        let match;
-        while ((match = htmlTagRegex.exec(formattedMessage)) !== null) {
-            htmlTags.push({
-                tag: match[0],
-                position: match.index
-            });
-        }
-        
-        // Remove HTML tags for the typing animation
-        const plainText = formattedMessage.replace(htmlTagRegex, '');
-        
-        // Function to get HTML tags to insert at a specific position
-        function getTagsAtPosition(pos) {
-            return htmlTags
-                .filter(tag => tag.position === pos)
-                .map(tag => tag.tag)
-                .join('');
-        }
-        
-        // Typing animation function
         function typeNextChar() {
             if (i < plainText.length) {
-                // Check if there are any HTML tags to insert at the current position
-                const tagsToInsert = getTagsAtPosition(i);
-                if (tagsToInsert) {
-                    messageDiv.innerHTML += tagsToInsert;
-                }
-                
-                // Add the next character
                 messageDiv.innerHTML += plainText.charAt(i);
                 i++;
-                
-                // Scroll to the latest message
                 chatMessages.scrollTop = chatMessages.scrollHeight;
-                
-                // Random typing speed variation for realism (reduced for faster speed)
                 const randomDelay = Math.floor(Math.random() * 5) + typingSpeed;
                 setTimeout(typeNextChar, randomDelay);
             } else {
-                // Add any remaining tags at the end
-                const tagsToInsert = getTagsAtPosition(plainText.length);
-                if (tagsToInsert) {
-                    messageDiv.innerHTML += tagsToInsert;
-                }
-                
                 // Animation complete - speak the message if supported
                 if ('speechSynthesis' in window) {
-                    // Remove HTML tags for speech
                     const cleanText = message.replace(/\*\*/g, '');
                     speakMessage(cleanText);
                 }
             }
         }
         
-        // Start typing with minimal delay
         setTimeout(typeNextChar, 100);
     }
-    
+     
     // Show typing indicator
     function showTypingIndicator() {
         const indicator = document.createElement('div');
@@ -171,7 +157,35 @@ document.addEventListener('DOMContentLoaded', function() {
         // Show typing indicator
         showTypingIndicator();
         
-        // Send message to backend
+        // Check if it's a wood material query
+        const messageLC = message.toLowerCase();
+        const isWoodQuery = [
+            'mdf', 'particle board', 'particleboard', 'hdhmr', 'boilo',
+            'compare', 'vs', 'versus', 'difference between', 'better',
+            'best', 'stronger', 'which is', 'recommend', 'prefer',
+            'advantages', 'disadvantages', 'pros and cons'
+        ].some(term => messageLC.includes(term));
+
+        if (isWoodQuery) {
+            // Handle wood material queries locally using wood definitions
+            setTimeout(() => {
+                removeTypingIndicator();
+                const response = getWoodMaterialResponse(message);
+                if (response) {
+                    addBotMessage(response);
+                } else {
+                    // If no specific comparison found, send to backend
+                    sendToBackend(message);
+                }
+            }, 500);
+        } else {
+            // Send all other queries to backend
+            sendToBackend(message);
+        }
+    }
+
+    // Function to send message to backend
+    function sendToBackend(message) {
         fetch('/api/ask', {
             method: 'POST',
             headers: {
@@ -187,7 +201,70 @@ document.addEventListener('DOMContentLoaded', function() {
             if (data.error) {
                 addBotMessage("Sorry, I encountered an error: " + data.error);
             } else {
-                addBotMessage(data.answer);
+                // Check if this is a contact information message and format it properly
+                if (data.answer.includes("I'm sorry, I don't have enough information") && 
+                    data.answer.includes("Please contact our Tesa expert team")) {
+                    // Create a custom formatted message with HTML
+                    const messageDiv = document.createElement('div');
+                    messageDiv.className = 'message bot-message';
+                    
+                    // Clean HTML formatting with no extra line breaks
+                    messageDiv.innerHTML = `
+                        <p>I'm sorry, I don't have enough information to answer that question.</p>
+                        <p>Please contact our Tesa expert team:</p>
+                        <div style="margin-top: 10px;">
+                            <div><strong>Email: </strong>customerservices@ actiontesa.com</div>
+                            <div><strong>Phone: </strong>1800-3090-707</div>
+                            <div><strong>Hours: </strong>Monday to Saturday, &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;9 AM to 6 PM</div>
+                        </div>
+                    `;
+                    
+                    // Add directly to chat messages
+                    chatMessages.appendChild(messageDiv);
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                    
+                    // Custom text for speech synthesis
+                    const contactText = "I'm sorry, I don't have enough information to answer that question. " +
+                        "Please contact our Tesa expert team. Email: support@tesa.com. " +
+                        "Phone: +91-1234567890. Hours: Monday to Saturday, 9 AM to 6 PM.";
+                    if ('speechSynthesis' in window) {
+                        speakMessage(contactText);
+                    }
+                } else if (data.answer.includes("wood comparison") || data.answer.toLowerCase().includes("compare")) {
+                    // Create a custom formatted message for wood comparisons
+                    const messageDiv = document.createElement('div');
+                    messageDiv.className = 'message bot-message';
+                    
+                    // Extract wood properties from the answer
+                    const formattedAnswer = data.answer.replace(/\n/g, '<br>');
+                    
+                    // Add styled comparison table with enhanced styling
+                    messageDiv.innerHTML = `
+                        <div class="wood-comparison">
+                            <div class="comparison-header">
+                                <h4>Wood Comparison</h4>
+                            </div>
+                            <div class="wood-material">
+                                <div class="wood-material-description">
+                                    ${formattedAnswer}
+                                </div>
+                            </div>
+                            <div class="comparison-footer">
+                                <p><em>Note: Properties may vary based on specific grade and treatment</em></p>
+                            </div>
+                        </div>
+                    `;
+                    
+                    // Add to chat messages
+                    chatMessages.appendChild(messageDiv);
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                    
+                    if ('speechSynthesis' in window) {
+                        speakMessage(data.answer);
+                    }
+                } else {
+                    addBotMessage(data.answer);
+                }
             }
         })
         .catch(error => {
@@ -199,7 +276,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // Function to speak the message using Web Speech API
+    
     function speakMessage(message) {
         // Cancel any previous speech
         window.speechSynthesis.cancel();
@@ -216,3 +293,22 @@ document.addEventListener('DOMContentLoaded', function() {
         window.speechSynthesis.speak(utterance);
     }
 });
+
+function displayMessage(message, isBot = false) {
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `message ${isBot ? 'bot-message' : 'user-message'}`;
+    
+    // For bot messages containing wood material info, render directly without escaping HTML
+    if (isBot && message.includes('wood-comparison')) {
+        messageDiv.innerHTML = message;
+    } else {
+        // For regular messages, escape HTML and handle line breaks
+        const textContent = document.createElement('div');
+        textContent.className = 'message-text';
+        textContent.textContent = message;
+        messageDiv.appendChild(textContent);
+    }
+    
+    chatMessages.appendChild(messageDiv);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+}
